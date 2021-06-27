@@ -15,7 +15,8 @@ impl fmt::Display for Marking {
     }
 }
 
-enum PlacementError {
+#[derive(Debug)]
+pub enum PlacementError {
     FilledSpaceError(usize, usize),
     InvalidLocationError(usize, usize),
 }
@@ -53,13 +54,13 @@ impl InnerBoard {
         }
     }
 
-    fn place(&mut self, row: &usize, col: &usize, m: &Marking) {
-        if let Err(e) = self.place_marker(row, col, m) {
-            println!("Invalid: {}", e);
-        }
+    fn place(&mut self, row: &usize, col: &usize, m: &Marking) -> Result<(), PlacementError> {
+        self.place_marker(row, col, m)?;
+
         if self.check_winner(m) {
             self.winner = Some(m.clone());
         }
+        Ok(())
     }
 
     fn place_marker(
@@ -196,18 +197,19 @@ impl OuterBoard {
         }
     }
 
-    pub fn place(&mut self, i: usize, j: usize, x: &usize, y: &usize, m: &Marking) {
-        self.boards[j][i].place(x, y, m);
+    pub fn place(&mut self, i: usize, j: usize, row: &usize, col: &usize, m: &Marking) -> Result<(usize, usize), PlacementError> {
+        self.boards[i][j].place(row, col, m)?;
         self.update_master_board(&i, &j);
         if self.master_board.check_winner(m) {
             println!("Winner is {}\n\n{}", m, self);
             std::process::exit(0);
         }
+        Ok((*row, *col))
     }
 
-    fn update_master_board(&mut self, x: &usize, y: &usize) {
-        if self.master_board.board[*y][*x] == None {
-            self.master_board.board[*y][*x] = self.boards[*y][*x].winner.clone();
+    fn update_master_board(&mut self, row: &usize, col: &usize) {
+        if self.master_board.board[*row][*col] == None {
+            self.master_board.board[*row][*col] = self.boards[*row][*col].winner.clone();
         }
     }
 }
