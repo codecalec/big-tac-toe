@@ -55,18 +55,22 @@ fn main() {
             &cross
         };
         num_turns += 1;
+
         println!("It is {}'s turn in board {}:{}", current, next_loc.0 + 1, next_loc.1 + 1);
 
         // Turn Loop
         loop {
+            println!("Enter your move (row col): ");
             let mut input = String::new();
             std::io::stdin()
                 .read_line(&mut input)
                 .expect("Issue reading input");
+
             match get_position(input) {
                 Ok((row, col)) => {
                     match outer.place(next_loc.0, next_loc.1, &row, &col, current) {
                         Ok(x) => {
+                            print!("\x1B[2J\x1B[1;1H"); // Clear Terminal window
                             next_loc = x;
                             break;
                         },
